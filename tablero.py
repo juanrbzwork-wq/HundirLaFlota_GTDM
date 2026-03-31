@@ -1,44 +1,20 @@
-"""
-Módulo tablero.py
-Gestiona la creación, modificación y visualización de las cuadrículas del juego.
-"""
-
 def crear_tablero(filas, columnas):
-    """
-    Crea una matriz (lista de listas) rellenada con el símbolo de agua '~'.
-    """
-    tablero = []
-    for i in range(filas):
-        fila = ['~'] * columnas
-        tablero.append(fila)
-    return tablero
+    """Crea una matriz 2D llena de agua ('~')"""
+    return [['~' for _ in range(columnas)] for _ in range(filas)]
 
 def imprimir_tablero(tablero, ocultar_barcos=False):
-    """
-    Muestra el tablero por consola con cabeceras de filas y columnas.
-    Si ocultar_barcos es True, las 'B' (barcos) se muestran como '~' (agua).
-    """
-    columnas_str = "  " + " ".join([str(i) for i in range(1, len(tablero[0]) + 1)])
-    print(columnas_str)
+    """Imprime el tablero por pantalla con cabeceras de columnas y filas"""
+    # Imprimir números de las columnas
+    cabecera = "   " + " ".join([str(i) for i in range(len(tablero[0]))])
+    print(cabecera)
     
-    letras = "ABCDEFGHIJ"
-    for i in range(len(tablero)):
-        fila_visual = []
-        for celda in tablero[i]:
+    # Imprimir cada fila con su número correspondiente
+    for idx, fila in enumerate(tablero):
+        fila_str = []
+        for celda in fila:
             if ocultar_barcos and celda == 'B':
-                fila_visual.append('~')
+                fila_str.append('~')
             else:
-                fila_visual.append(celda)
-        
-        # Mostramos la letra de la fila seguida de los símbolos
-        print(f"{letras[i]} " + " ".join(fila_visual))
+                fila_str.append(celda)
+        print(f"{idx:2d} {' '.join(fila_str)}")
     print() # Salto de línea por estética
-
-def actualizar_celda(tablero, fila, columna, resultado_disparo):
-    """
-    Modifica el símbolo de la matriz según el resultado del disparo.
-    """
-    if resultado_disparo == "Agua":
-        tablero[fila][columna] = 'O'
-    elif resultado_disparo in ["Tocado", "Hundido"]:
-        tablero[fila][columna] = 'X'

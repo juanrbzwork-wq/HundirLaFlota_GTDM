@@ -1,68 +1,84 @@
-"""
-Módulo barcos.py
-Gestiona la validación y colocación de la flota en el tablero.
-"""
 import random
+import tablero # Importamos tablero para poder mostrarlo al colocar manualmente
 
-def validar_posicion(tablero, fila, columna, tamaño, orientacion):
-    """
-    Comprueba si un barco puede colocarse en la posición indicada sin salirse
-    del tablero ni pisar otro barco. Devuelve True o False.
-    """
-    filas_totales = len(tablero)
-    columnas_totales = len(tablero[0])
-
-    if orientacion == 'H':
-        if columna + tamaño > columnas_totales:
-            return False
-        for c in range(columna, columna + tamaño):
-            if tablero[fila][c] != '~':
-                return False
-                
-    elif orientacion == 'V':
-        if fila + tamaño > filas_totales:
-            return False
-        for f in range(fila, fila + tamaño):
-            if tablero[f][columna] != '~':
-                return False
-                
-    return True
-
-def colocar_barco(tablero, flota, fila, columna, tamaño, orientacion, id_barco):
-    """
-    Dibuja el barco en la matriz ('B') y guarda sus datos en el diccionario de la flota.
-    """
-    posiciones = []
+def generar_flota_aleatoria(tablero_obj, flota, configuracion_barcos):
+    """Coloca los barcos aleatoriamente."""
+    filas = len(tablero_obj)
+    cols = len(tablero_obj[0])
     
-    if orientacion == 'H':
-        for c in range(columna, columna + tamaño):
-            tablero[fila][c] = 'B'
-            posiciones.append((fila, c))
-    elif orientacion == 'V':
-        for f in range(fila, fila + tamaño):
-            tablero[f][columna] = 'B'
-            posiciones.append((f, columna))
-            
-    # Guardamos el barco en el diccionario
-    flota[id_barco] = {
-        "tamaño": tamaño,
-        "impactos": 0,
-        "posiciones": posiciones
-    }
-
-def generar_flota_aleatoria(tablero, flota, configuracion_barcos):
-    """
-    Recorre la lista de tamaños y los coloca aleatoriamente en el tablero.
-    """
-    id_barco = 0
-    for tamaño in configuracion_barcos:
+    for idx, tamano_barco in enumerate(configuracion_barcos):
         colocado = False
         while not colocado:
-            fila = random.randint(0, len(tablero) - 1)
-            columna = random.randint(0, len(tablero[0]) - 1)
-            orientacion = random.choice(['H', 'V'])
+            orientacion = random.randint(0, 1) # 0: Horizontal, 1: Vertical
+            f = random.randint(0, filas - 1)
+            c = random.randint(0, cols - 1)
             
-            if validar_posicion(tablero, fila, columna, tamaño, orientacion):
-                colocar_barco(tablero, flota, fila, columna, tamaño, orientacion, id_barco)
+            coordenadas_temp = []
+            valido = True
+            
+            for i in range(tamano_barco):
+                nf = f + (i if orientacion == 1 else 0)
+                nc = c + (i if orientacion == 0 else 0)
+                
+                # Comprobamos que no se salga ni colisione
+                if nf >= filas or nc >= cols or tablero_obj[nf][nc] == 'B':
+                    valido = False
+                    break
+                coordenadas_temp.append((nf, nc))
+            
+            if valido:
+                for (nf, nc) in coordenadas_temp:
+                    tablero_obj[nf][nc] = 'B'
+                flota[f"barco_{idx}_{tamano_barco}casillas"] = coordenadas_temp
                 colocado = True
-                id_barco += 1
+
+def colocar_flota_manual(tablero_obj, flota, configuracion_barcos):
+    """Permite al jugador colocar sus barcos introduciendo coordenadas."""
+    filas = len(tablero_obj)
+    cols = len(tablero_obj[0])
+    
+    print("\n¡Preparando la colocación manual de la flota!")
+    
+    for idx, tamano_barco in enumerate(configuracion_barcos):
+        colocado = False
+        while not colocado:
+            print(f"\nTe toca colocar un barco de tamaño: {tamano_barco}")
+            tablero.imprimir_tablero(tablero_obj, ocultar_barcos=False)
+            
+            try:
+                entrada = input("Introduce las coordenadas iniciales (fila columna) ej: '3 4': ")
+                f, c = map(int, entrada.split())
+                
+                # Si el barco ocupa más de 1 casilla, pedimos orientación
+                orientacion = 0
+                if tamano_barco > 1:
+                    ori_input = input("Orientación (h para horizontal, v para vertical): ").strip().lower()
+                    if ori_input == 'v':
+                        orientacion = 1
+                    elif ori_input != 'h':
+                        print("Orientación no válida. Asumiendo Horizontal (h).")
+                        orientacion = 0
+                
+                coordenadas_temp = []
+                valido = True
+                
+                for i in range(tamano_barco):
+                    nf = f + (i if orientacion == 1 else 0)
+                    nc = c + (i if orientacion == 0 else 0)
+                    
+                    if nf < 0 or nf >= filas or nc < 0 or nc >= cols or tablero_obj[nf][nc] == 'B':
+                        valido = False
+                        break
+                    coordenadas_temp.append((nf, nc))
+                
+                if valido:
+                    for (nf, nc) in coordenadas_temp:
+                        tablero_obj[nf][nc] = 'B'
+                    flota[f"barco_{idx}_{tamano_barco}casillas"] = coordenadas_temp
+                    colocado = True
+                    print("--> ¡Barco posicionado correctamente!")
+                else:
+                    print("❌ ERROR: El barco se sale del tablero o choca con otro barco. Intenta de nuevo.")
+                    
+            except ValueError:
+                print("❌ ERROR: Formato inválido. Escribe dos números separados por un espacio.")

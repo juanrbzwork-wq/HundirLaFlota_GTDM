@@ -1,51 +1,69 @@
-"""
-Módulo mecanicas.py
-Contiene la lógica de disparos, comprobación de victoria y turno del PC.
-"""
 import random
+import tablero
 
-def procesar_disparo(tablero_enemigo, flota_enemiga, fila, columna):
-    """
-    Evalúa el disparo. Modifica el diccionario de la flota si hay impacto.
-    Devuelve "Agua", "Tocado", "Hundido" o "Repetido".
-    """
-    celda = tablero_enemigo[fila][columna]
+def pedir_coordenadas(es_pc, size=10):
+    if es_pc: # Si es la máquina, genera coordenadas aleatorias
+        return random.randint(0, size-1), random.randint(0, size-1)
     
-    if celda == 'O' or celda == 'X':
-        return "Repetido"
-        
-    elif celda == '~':
-        return "Agua"
-        
-    elif celda == 'B':
-        # Buscamos a qué barco le ha dado
-        for id_barco, datos in flota_enemiga.items():
-            if (fila, columna) in datos["posiciones"]:
-                datos["impactos"] += 1
-                if datos["impactos"] == datos["tamaño"]:
-                    return "Hundido"
-                else:
-                    return "Tocado"
+    while True: # Si es jugador humano, pide por consola
+        try:
+            entrada = input("Introduce coordenadas de ataque (fila columna) ej: '3 4': ")
+            f, c = map(int, entrada.split())
+            if 0 <= f < size and 0 <= c < size:
+                return f, c
+            print("Coordenadas fuera de rango. Recuerda que el tablero es de 0 a 9.")
+        except ValueError:
+            print("Formato inválido. Usa dos números separados por un espacio.")
 
-def verificar_fin_juego(flota):
-    """
-    Comprueba si todos los barcos de una flota han sido hundidos.
-    """
-    for datos in flota.values():
-        if datos["impactos"] < datos["tamaño"]:
-            return False # Hay al menos un barco vivo
-    return True
+def verificar_hundido(flota, f, c):
+    """Revisa si al golpear la coordenada (f, c) se hunde algún barco completo"""
+    for nombre_barco, coords in flota.items():
+        if (f, c) in coords:
+            coords.remove((f, c))
+            if len(coords) == 0:
+                return nombre_barco # El barco no tiene más casillas intactas
+            return None
+    return None
 
-def generar_disparo_ia(radar):
-    """
-    Genera unas coordenadas aleatorias para el ordenador que no hayan sido disparadas antes.
-    """
-    filas_totales = len(radar)
-    columnas_totales = len(radar[0])
+def ejecutar_turno(nombre_jugador, radar_atacante, tablero_defensor, flota_defensora, es_pc):
+    print(f"\n{'='*15} Turno de {nombre_jugador} {'='*15}")
+    if not es_pc:
+        print("Tu Radar de ataques:")
+        tablero.imprimir_tablero(radar_atacante)
     
-    while True:
-        fila = random.randint(0, filas_totales - 1)
-        columna = random.randint(0, columnas_totales - 1)
-        # Si en el radar del PC hay agua ('~'), es una casilla virgen
-        if radar[fila][columna] == '~':
-            return fila, columna
+    size = len(tablero_defensor)
+    valido = False
+    
+    # Repetir mientras ataque una coordenada repetida
+    while not valido:
+        f, c = pedir_coordenadas(es_pc, size)
+        
+        if radar_atacante[f][c] in ['X', 'O']:
+            if not es_pc:
+                print("Ya has disparado en esas coordenadas. Intenta de nuevo.")
+        else:
+            valido = True
+            
+    print(f"> {nombre_jugador} dispara en ({f}, {c})...")
+    
+    # Comprobar el disparo
+    if tablero_defensor[f][c] == 'B':
+        print("¡TOCADO! 💥")
+        tablero_defensor[f][c] = 'X'
+        radar_atacante[f][c] = 'X'
+        
+        barco_hundido = verificar_hundido(flota_defensora, f, c)
+        if barco_hundido:
+            print("¡HUNDIDO! 🚢💥")
+            del flota_defensora[barco_hundido] # Eliminamos el barco hundido del diccionario
+            
+    else:
+        print("¡AGUA! 🌊")
+        tablero_defensor[f][c] = 'O'
+        radar_atacante[f][c] = 'O'
+        
+    # Comprobar si se ha ganado (cuando no queden barcos en el diccionario)
+    if len(flota_defensora) == 0:
+        return True
+    
+    return False

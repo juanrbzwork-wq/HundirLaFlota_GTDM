@@ -4,11 +4,11 @@ import mecanicas
 import interfaz
 
 def main():
-
     # INICIALIZACIÓN Y CONFIGURACIÓN
     interfaz.mostrar_mensaje_bienvenida()
     modo_juego = interfaz.mostrar_menu_inicial() 
     
+    # Tableros 10x10 y flotas
     tablero_j1 = tablero.crear_tablero(10, 10)
     radar_j1 = tablero.crear_tablero(10, 10)
     flota_j1 = {}  
@@ -19,53 +19,61 @@ def main():
     
     configuracion_barcos = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1] 
     
-    barcos.generar_flota_aleatoria(tablero_j1, flota_j1, configuracion_barcos)
-    barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
+    # === FASE DE COLOCACIÓN DE BARCOS ===
+    
+    # Colocar Jugador 1
+    opcion_j1 = interfaz.pedir_modo_colocacion("Jugador 1")
+    if opcion_j1 == 1:
+        barcos.colocar_flota_manual(tablero_j1, flota_j1, configuracion_barcos)
+    else:
+        barcos.generar_flota_aleatoria(tablero_j1, flota_j1, configuracion_barcos)
+        print("Flota del Jugador 1 generada aleatoriamente.")
 
-    juego_activo = True
-    turno_jugador_1 = True  
-
-    # BUCLE PRINCIPAL DEL JUEGO
-    while juego_activo:
-        
-        if turno_jugador_1:
-            # Llamamos a mecanicas.ejecutar_turno
-            ha_ganado = mecanicas.ejecutar_turno(
-                nombre_jugador="Jugador 1", 
-                radar_atacante=radar_j1, 
-                tablero_defensor=tablero_j2, 
-                flota_defensora=flota_j2, 
-                es_pc=False
-            )
-            
-            if ha_ganado:
-                ganador = "Jugador 1"
-                juego_activo = False
-            else:
-                turno_jugador_1 = False
-                
+    # Colocar Jugador 2 u Ordenador
+    if modo_juego == 1:
+        print("\nEl Ordenador está colocando sus barcos estratégicamente...")
+        barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
+    else:
+        opcion_j2 = interfaz.pedir_modo_colocacion("Jugador 2")
+        if opcion_j2 == 1:
+            barcos.colocar_flota_manual(tablero_j2, flota_j2, configuracion_barcos)
         else:
-            es_ordenador = (modo_juego == 1)
-            nombre_j2 = "Ordenador" if es_ordenador else "Jugador 2"
-            
-            # Llamamos a mecanicas.ejecutar_turno
-            ha_ganado = mecanicas.ejecutar_turno(
-                nombre_jugador=nombre_j2, 
-                radar_atacante=radar_j2, 
-                tablero_defensor=tablero_j1, 
-                flota_defensora=flota_j1, 
-                es_pc=es_ordenador
-            )
-            
-            if ha_ganado:
-                ganador = nombre_j2
-                juego_activo = False
-            else:
-                turno_jugador_1 = True
+            barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
+            print("Flota del Jugador 2 generada aleatoriamente.")
+
+    # === BUCLE PRINCIPAL DEL JUEGO ===
+    juego_activo = True
+    ganador = ""
+    turno_actual = 0 # 0 para J1 y 1 para J2
+
+    jugadores = [
+        {"nombre": "Jugador 1", "radar": radar_j1, "tab_defensor": tablero_j2, "flota_defensora": flota_j2, "es_pc": False},
+        {"nombre": "Ordenador" if modo_juego == 1 else "Jugador 2", "radar": radar_j2, "tab_defensor": tablero_j1, "flota_defensora": flota_j1, "es_pc": modo_juego == 1}
+    ]
+
+    while juego_activo:
+        jugador_activo = jugadores[turno_actual % 2]
+        
+        ha_ganado = mecanicas.ejecutar_turno(
+            nombre_jugador=jugador_activo["nombre"], 
+            radar_atacante=jugador_activo["radar"], 
+            tablero_defensor=jugador_activo["tab_defensor"], 
+            flota_defensora=jugador_activo["flota_defensora"], 
+            es_pc=jugador_activo["es_pc"]
+        )
+        
+        if ha_ganado:
+            ganador = jugador_activo["nombre"]
+            juego_activo = False
+        else:
+            turno_actual += 1
 
     # RESOLUCIÓN Y FIN DE PARTIDA
     interfaz.mostrar_victoria(ganador)
+    print("\n--- Tablero final Jugador 1 ---")
     tablero.imprimir_tablero(tablero_j1, ocultar_barcos=False)
+    print("\n--- Tablero final Jugador 2 ---")
     tablero.imprimir_tablero(tablero_j2, ocultar_barcos=False)
 
-main()
+if __name__ == "__main__":
+    main()
