@@ -1,18 +1,8 @@
 def mostrar_mensaje_bienvenida():
     print("="*50)
     print("        ¡BIENVENIDO A HUNDIR LA FLOTA!        ")
+    print("        --- Modo 2 Jugadores Local ---        ")
     print("="*50)
-
-def mostrar_menu_inicial():
-    print("Selecciona el modo de juego:")
-    print("1. Un jugador (contra el Ordenador)")
-    print("2. Dos jugadores (Multijugador local)")
-    
-    opcion = input("Introduce 1 o 2: ")
-    while opcion not in ['1', '2']:
-        opcion = input("Opción no válida. Por favor, introduce 1 o 2: ")
-    
-    return int(opcion)
 
 def pedir_modo_colocacion(nombre_jugador):
     """Pregunta al jugador si quiere colocar barcos manual o aleatoriamente"""

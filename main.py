@@ -6,7 +6,6 @@ import interfaz
 def main():
     # INICIALIZACIÓN Y CONFIGURACIÓN
     interfaz.mostrar_mensaje_bienvenida()
-    modo_juego = interfaz.mostrar_menu_inicial() 
     
     # Tableros 10x10 y flotas
     tablero_j1 = tablero.crear_tablero(10, 10)
@@ -29,17 +28,13 @@ def main():
         barcos.generar_flota_aleatoria(tablero_j1, flota_j1, configuracion_barcos)
         print("Flota del Jugador 1 generada aleatoriamente.")
 
-    # Colocar Jugador 2 u Ordenador
-    if modo_juego == 1:
-        print("\nEl Ordenador está colocando sus barcos estratégicamente...")
-        barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
+    # Colocar Jugador 2
+    opcion_j2 = interfaz.pedir_modo_colocacion("Jugador 2")
+    if opcion_j2 == 1:
+        barcos.colocar_flota_manual(tablero_j2, flota_j2, configuracion_barcos)
     else:
-        opcion_j2 = interfaz.pedir_modo_colocacion("Jugador 2")
-        if opcion_j2 == 1:
-            barcos.colocar_flota_manual(tablero_j2, flota_j2, configuracion_barcos)
-        else:
-            barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
-            print("Flota del Jugador 2 generada aleatoriamente.")
+        barcos.generar_flota_aleatoria(tablero_j2, flota_j2, configuracion_barcos)
+        print("Flota del Jugador 2 generada aleatoriamente.")
 
     # === BUCLE PRINCIPAL DEL JUEGO ===
     juego_activo = True
@@ -47,8 +42,8 @@ def main():
     turno_actual = 0 # 0 para J1 y 1 para J2
 
     jugadores = [
-        {"nombre": "Jugador 1", "radar": radar_j1, "tab_defensor": tablero_j2, "flota_defensora": flota_j2, "es_pc": False},
-        {"nombre": "Ordenador" if modo_juego == 1 else "Jugador 2", "radar": radar_j2, "tab_defensor": tablero_j1, "flota_defensora": flota_j1, "es_pc": modo_juego == 1}
+        {"nombre": "Jugador 1", "radar": radar_j1, "tab_defensor": tablero_j2, "flota_defensora": flota_j2},
+        {"nombre": "Jugador 2", "radar": radar_j2, "tab_defensor": tablero_j1, "flota_defensora": flota_j1}
     ]
 
     while juego_activo:
@@ -58,8 +53,7 @@ def main():
             nombre_jugador=jugador_activo["nombre"], 
             radar_atacante=jugador_activo["radar"], 
             tablero_defensor=jugador_activo["tab_defensor"], 
-            flota_defensora=jugador_activo["flota_defensora"], 
-            es_pc=jugador_activo["es_pc"]
+            flota_defensora=jugador_activo["flota_defensora"]
         )
         
         if ha_ganado:
