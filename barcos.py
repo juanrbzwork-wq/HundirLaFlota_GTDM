@@ -1,5 +1,5 @@
 import random
-import tablero # Importamos tablero para poder mostrarlo al colocar manualmente
+import tablero 
 
 def generar_flota_aleatoria(tablero_obj, flota, configuracion_barcos):
     """Coloca los barcos aleatoriamente."""
@@ -36,6 +36,7 @@ def colocar_flota_manual(tablero_obj, flota, configuracion_barcos):
     """Permite al jugador colocar sus barcos introduciendo coordenadas."""
     filas = len(tablero_obj)
     cols = len(tablero_obj[0])
+    letras_validas = "ABCDEFGHIJ"
     
     print("\n¡Preparando la colocación manual de la flota!")
     
@@ -46,10 +47,25 @@ def colocar_flota_manual(tablero_obj, flota, configuracion_barcos):
             tablero.imprimir_tablero(tablero_obj, ocultar_barcos=False)
             
             try:
-                entrada = input("Introduce las coordenadas iniciales (fila columna) ej: '3 4': ")
-                f, c = map(int, entrada.split())
+                entrada = input("Introduce las coordenadas iniciales (letra columna y número fila) ej: 'C 4' o 'B5': ").upper().replace(" ", "")
+                if len(entrada) < 2:
+                    print("❌ ERROR: Formato inválido.")
+                    continue
                 
-                # Si el barco ocupa más de 1 casilla, pedimos orientación
+                letra = entrada[0]
+                numero = entrada[1:]
+                
+                if letra not in letras_validas:
+                    print("❌ ERROR: La columna debe ser una letra de la A a la J.")
+                    continue
+                    
+                c = letras_validas.index(letra)
+                f = int(numero) - 1
+                
+                if f < 0 or f >= filas:
+                    print(f"❌ ERROR: La fila debe ser un número del 1 al {filas}.")
+                    continue
+                
                 orientacion = 0
                 if tamano_barco > 1:
                     ori_input = input("Orientación (h para horizontal, v para vertical): ").strip().lower()
@@ -81,4 +97,4 @@ def colocar_flota_manual(tablero_obj, flota, configuracion_barcos):
                     print("❌ ERROR: El barco se sale del tablero o choca con otro barco. Intenta de nuevo.")
                     
             except ValueError:
-                print("❌ ERROR: Formato inválido. Escribe dos números separados por un espacio.")
+                print("❌ ERROR: Formato inválido. Escribe una letra y un número.")

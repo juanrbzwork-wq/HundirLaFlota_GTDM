@@ -3,12 +3,14 @@ def crear_tablero(filas, columnas):
     return [['~' for _ in range(columnas)] for _ in range(filas)]
 
 def imprimir_tablero(tablero, ocultar_barcos=False):
-    """Imprime el tablero por pantalla con cabeceras de columnas y filas"""
-    # Imprimir números de las columnas
-    cabecera = "   " + " ".join([str(i) for i in range(len(tablero[0]))])
+    """Imprime el tablero por pantalla con letras en columnas y números en filas"""
+    letras = "ABCDEFGHIJ"
+    
+    # Imprimir letras de las columnas en la cabecera
+    cabecera = "   " + " ".join([letras[i] for i in range(len(tablero[0]))])
     print(cabecera)
     
-    # Imprimir cada fila con su número correspondiente
+    # Imprimir cada fila con su número correspondiente (del 1 al 10)
     for idx, fila in enumerate(tablero):
         fila_str = []
         for celda in fila:
@@ -16,5 +18,7 @@ def imprimir_tablero(tablero, ocultar_barcos=False):
                 fila_str.append('~')
             else:
                 fila_str.append(celda)
-        print(f"{idx:2d} {' '.join(fila_str)}")
+                
+        # El número de la fila es el índice + 1
+        print(f"{idx + 1:2d} {' '.join(fila_str)}")
     print() # Salto de línea por estética
