@@ -69,5 +69,4 @@ def main():
     print("\n--- Tablero final Jugador 2 ---")
     tablero.imprimir_tablero(tablero_j2, ocultar_barcos=False)
 
-if __name__ == "__main__":
-    main()
+main()
